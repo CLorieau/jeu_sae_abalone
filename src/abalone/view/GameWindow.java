@@ -2,9 +2,7 @@ package abalone.view;
 
 import abalone.controller.GuiController;
 import abalone.model.Board;
-
 import javax.swing.*;
-import java.awt.*;
 
 public class GameWindow extends JFrame {
     public GameWindow() {

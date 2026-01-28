@@ -2,11 +2,9 @@ package abalone.view;
 
 import abalone.model.Board;
 import abalone.model.Color;
-import abalone.model.Direction;
 import abalone.model.HexCoordinate;
 import abalone.model.Move;
 import abalone.model.Piece;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;

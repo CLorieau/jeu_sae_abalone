@@ -1,7 +1,5 @@
 package abalone.model;
 
-import java.util.Objects;
-
 public class Piece {
     private final Color color;
 
