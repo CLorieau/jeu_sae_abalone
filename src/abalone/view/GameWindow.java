@@ -19,7 +19,7 @@ public class GameWindow extends JFrame {
         TitlePanel titlePanel = new TitlePanel(new TitlePanel.Listener() {
             @Override
             public void onStartClicked() {
-                startGame();
+                showPlayerSetup();
             }
 
             @Override
@@ -28,7 +28,21 @@ public class GameWindow extends JFrame {
             }
         });
 
+        PlayerSetupPanel setupPanel = new PlayerSetupPanel(new PlayerSetupPanel.Listener() {
+            @Override
+            public void onStartGame(String p1Name, abalone.model.Color p1Color, String p2Name,
+                    abalone.model.Color p2Color) {
+                startGame(p1Name, p1Color, p2Name, p2Color);
+            }
+
+            @Override
+            public void onBackToTitle() {
+                showTitleScreen();
+            }
+        });
+
         mainPanel.add(titlePanel, "TITLE");
+        mainPanel.add(setupPanel, "SETUP");
 
         add(mainPanel);
         setSize(800, 600);
@@ -42,9 +56,21 @@ public class GameWindow extends JFrame {
         cardLayout.show(mainPanel, "TITLE");
     }
 
-    private void startGame() {
+    public void showPlayerSetup() {
+        cardLayout.show(mainPanel, "SETUP");
+    }
+
+    private void startGame(String p1Name, abalone.model.Color p1Color, String p2Name, abalone.model.Color p2Color) {
         Board board = new Board();
         GuiController controller = new GuiController(board);
+
+        // Configure players based on color selection
+        if (p1Color == abalone.model.Color.BLACK) {
+            controller.setPlayerNames(p1Name, p2Name);
+        } else {
+            controller.setPlayerNames(p2Name, p1Name);
+        }
+
         GamePanel gamePanel = new GamePanel(board, controller);
 
         controller.setOnGameEnd(() -> {

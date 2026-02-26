@@ -6,6 +6,7 @@ import abalone.model.Direction;
 import abalone.model.HexCoordinate;
 import abalone.model.Move;
 import abalone.model.Piece;
+import abalone.model.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,11 @@ public class GuiController {
 
     public void setOnGameEnd(Runnable onGameEnd) {
         this.onGameEnd = onGameEnd;
+    }
+
+    public void setPlayerNames(String blackName, String whiteName) {
+        board.setPlayers(new Player(blackName, Color.BLACK), new Player(whiteName, Color.WHITE));
+        updateStatus();
     }
 
     public List<HexCoordinate> getSelectedMarbles() {
@@ -145,8 +151,10 @@ public class GuiController {
     }
 
     private void updateStatus() {
-        message = String.format("Turn: %s | Lost: W=%d B=%d",
-                currentTurn, board.getWhiteLost(), board.getBlackLost());
+        Player p = (currentTurn == Color.BLACK) ? board.getBlackPlayer() : board.getWhitePlayer();
+        String currentName = p.getName();
+        message = String.format("Au tour de: %s (%s) | Éjectées: B=%d W=%d",
+                currentName, currentTurn, board.getBlackLost(), board.getWhiteLost());
     }
 
     private void updateMessage(String msg) {

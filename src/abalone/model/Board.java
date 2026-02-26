@@ -8,8 +8,16 @@ import java.util.ArrayList;
 public class Board {
     public static final int RADIUS = 4;
     private final Map<HexCoordinate, Piece> pieces = new HashMap<>();
+    private Player blackPlayer;
+    private Player whitePlayer;
 
     public Board() {
+        this(new Player("Joueur Noir", Color.BLACK), new Player("Joueur Blanc", Color.WHITE));
+    }
+
+    public Board(Player black, Player white) {
+        this.blackPlayer = black;
+        this.whitePlayer = white;
         initBoard();
     }
 
@@ -76,6 +84,19 @@ public class Board {
 
     public int getWhiteLost() {
         return whiteLost;
+    }
+
+    public Player getBlackPlayer() {
+        return blackPlayer;
+    }
+
+    public Player getWhitePlayer() {
+        return whitePlayer;
+    }
+
+    public void setPlayers(Player black, Player white) {
+        this.blackPlayer = black;
+        this.whitePlayer = white;
     }
 
     public void executeMove(Move move) throws IllegalArgumentException {
