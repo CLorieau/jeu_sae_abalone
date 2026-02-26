@@ -15,6 +15,7 @@ public class GuiController {
     private Color currentTurn;
     private final List<HexCoordinate> selectedMarbles;
     private String message;
+    private Runnable onGameEnd;
 
     public GuiController(Board board) {
         this.board = board;
@@ -29,6 +30,10 @@ public class GuiController {
 
     public String getMessage() {
         return message;
+    }
+
+    public void setOnGameEnd(Runnable onGameEnd) {
+        this.onGameEnd = onGameEnd;
     }
 
     public List<HexCoordinate> getSelectedMarbles() {
@@ -126,10 +131,14 @@ public class GuiController {
     private boolean checkWin() {
         if (board.getWhiteLost() >= 6) {
             updateMessage("GAME OVER! BLACK WINS! (White lost 6)");
+            if (onGameEnd != null)
+                onGameEnd.run();
             return true;
         }
         if (board.getBlackLost() >= 6) {
             updateMessage("GAME OVER! WHITE WINS! (Black lost 6)");
+            if (onGameEnd != null)
+                onGameEnd.run();
             return true;
         }
         return false;
