@@ -2,8 +2,11 @@ package abalone.view;
 
 import abalone.controller.GuiController;
 import abalone.model.Board;
+import abalone.model.SaveService;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class GameWindow extends JFrame {
     private final CardLayout cardLayout;
@@ -20,6 +23,11 @@ public class GameWindow extends JFrame {
             @Override
             public void onStartClicked() {
                 showPlayerSetup();
+            }
+
+            @Override
+            public void onLoadClicked() {
+                loadGame();
             }
 
             @Override
@@ -71,6 +79,10 @@ public class GameWindow extends JFrame {
             controller.setPlayerNames(p2Name, p1Name);
         }
 
+        launchGame(board, controller);
+    }
+
+    private void launchGame(Board board, GuiController controller) {
         GamePanel gamePanel = new GamePanel(board, controller);
 
         controller.setOnGameEnd(() -> {
@@ -79,7 +91,58 @@ public class GameWindow extends JFrame {
             timer.start();
         });
 
-        mainPanel.add(gamePanel, "GAME");
+        JPanel gameWrapper = new JPanel(new BorderLayout());
+        gameWrapper.add(gamePanel, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(new java.awt.Color(34, 139, 34));
+        JButton saveButton = new JButton("Sauvegarder");
+        saveButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        saveButton.addActionListener(e -> saveGame(board));
+        bottomPanel.add(saveButton);
+
+        gameWrapper.add(bottomPanel, BorderLayout.SOUTH);
+
+        mainPanel.add(gameWrapper, "GAME");
         cardLayout.show(mainPanel, "GAME");
+    }
+
+    private void loadGame() {
+        File savesDir = new File("saves");
+        if (!savesDir.exists()) {
+            savesDir.mkdirs();
+        }
+        JFileChooser fileChooser = new JFileChooser(savesDir);
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            SaveService saveService = new SaveService();
+            Board board = new Board();
+            try {
+                saveService.loadFromFile(selectedFile.getAbsolutePath(), board);
+                GuiController controller = new GuiController(board);
+                launchGame(board, controller);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Erreur lors du chargement : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void saveGame(Board board) {
+        String fileName = JOptionPane.showInputDialog(this, "Nom de la sauvegarde :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
+        if (fileName != null && !fileName.trim().isEmpty()) {
+            File savesDir = new File("saves");
+            if (!savesDir.exists()) {
+                savesDir.mkdirs();
+            }
+            File saveFile = new File(savesDir, fileName + ".json");
+            SaveService saveService = new SaveService();
+            try {
+                saveService.saveToFile(saveFile.getAbsolutePath(), board);
+                JOptionPane.showMessageDialog(this, "Partie sauvegardée avec succès.", "Succès", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Erreur lors de la sauvegarde : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

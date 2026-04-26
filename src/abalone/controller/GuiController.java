@@ -20,7 +20,7 @@ public class GuiController {
 
     public GuiController(Board board) {
         this.board = board;
-        this.currentTurn = Color.BLACK;
+        this.currentTurn = board.getCurrentTurn();
         this.selectedMarbles = new ArrayList<>();
         this.message = "Turn: " + currentTurn;
     }
@@ -132,6 +132,7 @@ public class GuiController {
 
     private void switchTurn() {
         currentTurn = currentTurn.opposite();
+        board.setCurrentTurn(currentTurn);
     }
 
     private boolean checkWin() {

@@ -15,6 +15,7 @@ public class Board implements Saveable {
     private final Map<HexCoordinate, Piece> pieces = new HashMap<>();
     private Player blackPlayer;
     private Player whitePlayer;
+    private Color currentTurn = Color.BLACK;
 
     public Board() {
         this(new Player("Joueur Noir", Color.BLACK), new Player("Joueur Blanc", Color.WHITE));
@@ -102,6 +103,14 @@ public class Board implements Saveable {
     public void setPlayers(Player black, Player white) {
         this.blackPlayer = black;
         this.whitePlayer = white;
+    }
+
+    public Color getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public void setCurrentTurn(Color currentTurn) {
+        this.currentTurn = currentTurn;
     }
 
     public void executeMove(Move move) throws IllegalArgumentException {
@@ -353,6 +362,7 @@ public class Board implements Saveable {
             json.put("whiteLost", whiteLost);
             json.put("blackPlayer", blackPlayer.toJSON());
             json.put("whitePlayer", whitePlayer.toJSON());
+            json.put("currentTurn", currentTurn.name());
             JSONObject piecesJson = new JSONObject();
             for (Map.Entry<HexCoordinate, Piece> entry : pieces.entrySet()) {
                 piecesJson.put(entry.getKey().toString(), entry.getValue().toJSON());
@@ -371,6 +381,7 @@ public class Board implements Saveable {
             whiteLost = jsonObject.getInt("whiteLost");
             blackPlayer.fromJSON(jsonObject.getJSONObject("blackPlayer"));
             whitePlayer.fromJSON(jsonObject.getJSONObject("whitePlayer"));
+            currentTurn = Color.valueOf(jsonObject.getString("currentTurn"));
             JSONObject piecesJson = jsonObject.getJSONObject("pieces");
             pieces.clear();
             Iterator<?> keys = piecesJson.keys();

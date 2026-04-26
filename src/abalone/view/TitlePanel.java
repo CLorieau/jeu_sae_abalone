@@ -7,6 +7,8 @@ public class TitlePanel extends JPanel {
   public interface Listener {
     void onStartClicked();
 
+    void onLoadClicked();
+
     void onQuitClicked();
   }
 
@@ -24,18 +26,25 @@ public class TitlePanel extends JPanel {
     gbc.gridy = 0;
     add(titleLabel, gbc);
 
-    JButton playButton = new JButton("Jouer");
+    JButton playButton = new JButton("Nouvelle partie");
     playButton.setFont(new Font("Arial", Font.PLAIN, 24));
-    playButton.setPreferredSize(new Dimension(200, 50));
+    playButton.setPreferredSize(new Dimension(250, 50));
     playButton.addActionListener(e -> listener.onStartClicked());
     gbc.gridy = 1;
     add(playButton, gbc);
 
+    JButton loadButton = new JButton("Charger");
+    loadButton.setFont(new Font("Arial", Font.PLAIN, 24));
+    loadButton.setPreferredSize(new Dimension(250, 50));
+    loadButton.addActionListener(e -> listener.onLoadClicked());
+    gbc.gridy = 2;
+    add(loadButton, gbc);
+
     JButton quitButton = new JButton("Quitter le jeu");
     quitButton.setFont(new Font("Arial", Font.PLAIN, 24));
-    quitButton.setPreferredSize(new Dimension(200, 50));
+    quitButton.setPreferredSize(new Dimension(250, 50));
     quitButton.addActionListener(e -> listener.onQuitClicked());
-    gbc.gridy = 2;
+    gbc.gridy = 3;
     add(quitButton, gbc);
   }
 }
