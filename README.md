@@ -16,13 +16,19 @@ src/
 │   │   ├── Color.java
 │   │   ├── Direction.java
 │   │   ├── HexCoordinate.java
+│   │   ├── java-json.jar
 │   │   ├── Move.java
-│   │   └── Piece.java
+│   │   ├── Piece.java
+│   │   ├── Player.java
+│   │   ├── Saveable.java
+│   │   └── SaveService.java
 │   └── view/
 │       ├── ConsoleView.java
 │       ├── GamePanel.java
 │       ├── GameWindow.java
-│       └── HexLayout.java
+│       ├── HexLayout.java
+│       ├── PlayerSetupPanel.java
+│       └── TitlePanel.java
 ```
 
 ## Compilation and Execution
