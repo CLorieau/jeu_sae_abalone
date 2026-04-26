@@ -1,5 +1,6 @@
 package abalone.controller;
 
+import abalone.ai.AIPlayer;
 import abalone.model.Board;
 import abalone.model.Color;
 import abalone.model.Direction;
@@ -8,8 +9,11 @@ import abalone.model.Move;
 import abalone.model.Piece;
 import abalone.model.Player;
 
+import javax.swing.SwingWorker;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GuiController {
     private final Board board;
@@ -17,6 +21,9 @@ public class GuiController {
     private final List<HexCoordinate> selectedMarbles;
     private String message;
     private Runnable onGameEnd;
+    private Runnable onUpdate;
+    private AIPlayer aiPlayer;
+    private boolean aiThinking = false;
 
     public GuiController(Board board) {
         this.board = board;
@@ -37,16 +44,66 @@ public class GuiController {
         this.onGameEnd = onGameEnd;
     }
 
+    public void setOnUpdate(Runnable onUpdate) {
+        this.onUpdate = onUpdate;
+    }
+
     public void setPlayerNames(String blackName, String whiteName) {
         board.setPlayers(new Player(blackName, Color.BLACK), new Player(whiteName, Color.WHITE));
         updateStatus();
+    }
+
+    public void setPlayers(Player black, Player white) {
+        board.setPlayers(black, white);
+        if (black instanceof AIPlayer) {
+            this.aiPlayer = (AIPlayer) black;
+        } else if (white instanceof AIPlayer) {
+            this.aiPlayer = (AIPlayer) white;
+        }
+        updateStatus();
+        // If AI plays first, kick it off.
+        maybeTriggerAI();
+    }
+
+    public boolean isAITurn() {
+        return aiPlayer != null && aiPlayer.getColor() == currentTurn;
     }
 
     public List<HexCoordinate> getSelectedMarbles() {
         return new ArrayList<>(selectedMarbles);
     }
 
+    /**
+     * Returns the set of cells the player can click to commit a legal move with
+     * the current selection. Cells already occupied by the selection itself are
+     * filtered out (they are not a useful click target).
+     */
+    public Set<HexCoordinate> getPossibleDestinations() {
+        Set<HexCoordinate> result = new HashSet<>();
+        if (selectedMarbles.isEmpty())
+            return result;
+
+        Set<HexCoordinate> selSet = new HashSet<>(selectedMarbles);
+        for (Move m : board.generateLegalMoves(currentTurn)) {
+            if (m.getMarbles().size() != selSet.size())
+                continue;
+            if (!new HashSet<>(m.getMarbles()).equals(selSet))
+                continue;
+            HexCoordinate dir = m.getDirection();
+            for (HexCoordinate s : selectedMarbles) {
+                HexCoordinate dest = s.add(dir);
+                if (!selSet.contains(dest))
+                    result.add(dest);
+            }
+        }
+        return result;
+    }
+
     public void handleHashClick(HexCoordinate coord) {
+        // Block input while it's the AI's turn.
+        if (isAITurn() || aiThinking) {
+            return;
+        }
         if (!board.isValid(coord)) {
             // Clicked outside board? Deselect?
             selectedMarbles.clear();
@@ -116,6 +173,7 @@ public class GuiController {
 
                         switchTurn();
                         updateStatus();
+                        maybeTriggerAI();
                     } catch (IllegalArgumentException e) {
                         updateMessage("Invalid Move: " + e.getMessage());
                     } catch (Exception e) {
@@ -160,5 +218,50 @@ public class GuiController {
 
     private void updateMessage(String msg) {
         this.message = msg;
+    }
+
+    private void maybeTriggerAI() {
+        if (!isAITurn() || aiThinking) return;
+        aiThinking = true;
+        Player p = (currentTurn == Color.BLACK) ? board.getBlackPlayer() : board.getWhitePlayer();
+        message = "L'IA (" + p.getName() + ") réfléchit...";
+        fireUpdate();
+
+        final AIPlayer ai = aiPlayer;
+        new SwingWorker<Move, Void>() {
+            @Override
+            protected Move doInBackground() {
+                return ai.chooseMove(board);
+            }
+
+            @Override
+            protected void done() {
+                aiThinking = false;
+                try {
+                    Move move = get();
+                    if (move == null) {
+                        updateMessage("L'IA n'a pas pu trouver de coup.");
+                        fireUpdate();
+                        return;
+                    }
+                    board.executeMove(move);
+                    if (checkWin()) {
+                        fireUpdate();
+                        return;
+                    }
+                    switchTurn();
+                    updateStatus();
+                    fireUpdate();
+                } catch (Exception ex) {
+                    updateMessage("Erreur IA: " + ex.getMessage());
+                    ex.printStackTrace();
+                    fireUpdate();
+                }
+            }
+        }.execute();
+    }
+
+    private void fireUpdate() {
+        if (onUpdate != null) onUpdate.run();
     }
 }

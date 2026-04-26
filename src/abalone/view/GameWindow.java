@@ -1,7 +1,10 @@
 package abalone.view;
 
+import abalone.ai.AIPlayer;
+import abalone.ai.Difficulty;
 import abalone.controller.GuiController;
 import abalone.model.Board;
+import abalone.model.Player;
 import abalone.model.SaveService;
 import javax.swing.*;
 import java.awt.*;
@@ -39,8 +42,8 @@ public class GameWindow extends JFrame {
         PlayerSetupPanel setupPanel = new PlayerSetupPanel(new PlayerSetupPanel.Listener() {
             @Override
             public void onStartGame(String p1Name, abalone.model.Color p1Color, String p2Name,
-                    abalone.model.Color p2Color) {
-                startGame(p1Name, p1Color, p2Name, p2Color);
+                    abalone.model.Color p2Color, boolean p2IsAI, Difficulty difficulty) {
+                startGame(p1Name, p1Color, p2Name, p2Color, p2IsAI, difficulty);
             }
 
             @Override
@@ -68,23 +71,36 @@ public class GameWindow extends JFrame {
         cardLayout.show(mainPanel, "SETUP");
     }
 
-    private void startGame(String p1Name, abalone.model.Color p1Color, String p2Name, abalone.model.Color p2Color) {
+    private void startGame(String p1Name, abalone.model.Color p1Color, String p2Name, abalone.model.Color p2Color,
+            boolean p2IsAI, Difficulty difficulty) {
         Board board = new Board();
         GuiController controller = new GuiController(board);
 
-        // Configure players based on color selection
-        if (p1Color == abalone.model.Color.BLACK) {
-            controller.setPlayerNames(p1Name, p2Name);
-        } else {
-            controller.setPlayerNames(p2Name, p1Name);
-        }
+        Player p1 = new Player(p1Name, p1Color);
+        Player p2 = p2IsAI
+                ? new AIPlayer(p2Name, p2Color, difficulty)
+                : new Player(p2Name, p2Color);
 
-        launchGame(board, controller);
+        Player black = (p1Color == abalone.model.Color.BLACK) ? p1 : p2;
+        Player white = (p1Color == abalone.model.Color.BLACK) ? p2 : p1;
+
+        launchGame(board, controller, black, white);
+    }
+
+    private void launchGame(Board board, GuiController controller, Player black, Player white) {
+        GamePanel gamePanel = new GamePanel(board, controller);
+        // Set players AFTER GamePanel construction so the onUpdate callback is wired
+        // before setPlayers may trigger an opening AI move.
+        controller.setPlayers(black, white);
+        finishLaunch(board, controller, gamePanel);
     }
 
     private void launchGame(Board board, GuiController controller) {
         GamePanel gamePanel = new GamePanel(board, controller);
+        finishLaunch(board, controller, gamePanel);
+    }
 
+    private void finishLaunch(Board board, GuiController controller, GamePanel gamePanel) {
         controller.setOnGameEnd(() -> {
             Timer timer = new Timer(3000, e -> showTitleScreen());
             timer.setRepeats(false);

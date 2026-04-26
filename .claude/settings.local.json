@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(javac -cp \"src/abalone/model/java-json.jar;bin\" -d /tmp /tmp/SmokeTest.java)",
+      "Bash(java -cp \"src/abalone/model/java-json.jar;bin;/tmp\" SmokeTest)",
+      "Bash(java -cp \"src/abalone/model/java-json.jar;bin;C:/Users/cleme/AppData/Local/Temp\" SmokeTest)",
+      "Bash(cp /tmp/SmokeTest.class bin/)",
+      "Bash(java -cp \"src/abalone/model/java-json.jar;bin\" SmokeTest)"
+    ]
+  }
+}

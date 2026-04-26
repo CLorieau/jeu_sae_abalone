@@ -79,6 +79,78 @@ public class Board implements Saveable {
         return new HashMap<>(pieces);
     }
 
+    public Board copy() {
+        Board b = new Board(this.blackPlayer, this.whitePlayer);
+        b.pieces.clear();
+        for (Map.Entry<HexCoordinate, Piece> e : this.pieces.entrySet()) {
+            b.pieces.put(e.getKey(), new Piece(e.getValue().getColor()));
+        }
+        b.blackLost = this.blackLost;
+        b.whiteLost = this.whiteLost;
+        b.currentTurn = this.currentTurn;
+        return b;
+    }
+
+    /**
+     * Generates every legal move for the given color: singles, pairs, triples
+     * (aligned and contiguous) in all 6 directions. Used by the AI and by the
+     * GUI to highlight reachable cells.
+     */
+    public List<Move> generateLegalMoves(Color color) {
+        List<Move> moves = new ArrayList<>();
+        // Three "positive" axes used to enumerate pairs/triples without duplication.
+        int[] axisIndices = { 0, 1, 2 };
+
+        for (Map.Entry<HexCoordinate, Piece> entry : pieces.entrySet()) {
+            if (entry.getValue().getColor() != color)
+                continue;
+            HexCoordinate m1 = entry.getKey();
+
+            // Singles
+            for (int d = 0; d < 6; d++) {
+                List<HexCoordinate> group = new ArrayList<>();
+                group.add(m1);
+                Move mv = new Move(group, HexCoordinate.DIRECTIONS[d]);
+                if (validateMove(mv, color))
+                    moves.add(mv);
+            }
+
+            for (int axis : axisIndices) {
+                HexCoordinate axisDir = HexCoordinate.DIRECTIONS[axis];
+                HexCoordinate m2 = m1.add(axisDir);
+                Piece p2 = pieces.get(m2);
+                if (p2 == null || p2.getColor() != color)
+                    continue;
+
+                // Pairs along this axis
+                for (int d = 0; d < 6; d++) {
+                    List<HexCoordinate> group = new ArrayList<>();
+                    group.add(m1);
+                    group.add(m2);
+                    Move mv = new Move(group, HexCoordinate.DIRECTIONS[d]);
+                    if (validateMove(mv, color))
+                        moves.add(mv);
+                }
+
+                // Triples along this axis
+                HexCoordinate m3 = m2.add(axisDir);
+                Piece p3 = pieces.get(m3);
+                if (p3 == null || p3.getColor() != color)
+                    continue;
+                for (int d = 0; d < 6; d++) {
+                    List<HexCoordinate> group = new ArrayList<>();
+                    group.add(m1);
+                    group.add(m2);
+                    group.add(m3);
+                    Move mv = new Move(group, HexCoordinate.DIRECTIONS[d]);
+                    if (validateMove(mv, color))
+                        moves.add(mv);
+                }
+            }
+        }
+        return moves;
+    }
+
     // --- Move Logic ---
 
     private int blackLost = 0;

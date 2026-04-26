@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Set;
 
 public class GamePanel extends JPanel {
     private final Board board;
@@ -22,6 +23,8 @@ public class GamePanel extends JPanel {
         this.layout = new HexLayout(30, 400, 300); // Size 30, Centered roughly 800x600?
 
         setBackground(new java.awt.Color(34, 139, 34)); // Forest Green
+
+        controller.setOnUpdate(this::repaint);
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -66,6 +69,18 @@ public class GamePanel extends JPanel {
             Point p = layout.hexToPixel(h);
             g2.drawOval(p.x - (layout.getSize() - 5), p.y - (layout.getSize() - 5), (layout.getSize() - 5) * 2,
                     (layout.getSize() - 5) * 2);
+        }
+
+        // Draw possible destinations (move hints)
+        Set<HexCoordinate> destinations = controller.getPossibleDestinations();
+        for (HexCoordinate h : destinations) {
+            Point p = layout.hexToPixel(h);
+            int r = layout.getSize() / 2;
+            g2.setColor(new java.awt.Color(255, 215, 0, 160)); // translucent gold
+            g2.fillOval(p.x - r, p.y - r, r * 2, r * 2);
+            g2.setColor(new java.awt.Color(255, 255, 0));
+            g2.setStroke(new BasicStroke(2));
+            g2.drawOval(p.x - r, p.y - r, r * 2, r * 2);
         }
 
         // Draw Message
