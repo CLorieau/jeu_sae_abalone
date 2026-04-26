@@ -3,9 +3,14 @@ package abalone.model;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
-public class Board {
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class Board implements Saveable {
     public static final int RADIUS = 4;
     private final Map<HexCoordinate, Piece> pieces = new HashMap<>();
     private Player blackPlayer;
@@ -338,5 +343,43 @@ public class Board {
             return Integer.compare(dot1, dot2);
         });
         return sorted;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("blackLost", blackLost);
+            json.put("whiteLost", whiteLost);
+            json.put("blackPlayer", blackPlayer.toJSON());
+            json.put("whitePlayer", whitePlayer.toJSON());
+            JSONObject piecesJson = new JSONObject();
+            for (Map.Entry<HexCoordinate, Piece> entry : pieces.entrySet()) {
+                piecesJson.put(entry.getKey().toString(), entry.getValue().toJSON());
+            }
+            json.put("pieces", piecesJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+    @Override
+    public void fromJSON(JSONObject jsonObject) {
+        try {
+            blackLost = jsonObject.getInt("blackLost");
+            whiteLost = jsonObject.getInt("whiteLost");
+            blackPlayer.fromJSON(jsonObject.getJSONObject("blackPlayer"));
+            whitePlayer.fromJSON(jsonObject.getJSONObject("whitePlayer"));
+            JSONObject piecesJson = jsonObject.getJSONObject("pieces");
+            pieces.clear();
+            Iterator<?> keys = piecesJson.keys();
+            while (keys.hasNext()) {
+                String key = (String) keys.next();
+                pieces.put(new HexCoordinate(key), new Piece(piecesJson.getJSONObject(key)));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

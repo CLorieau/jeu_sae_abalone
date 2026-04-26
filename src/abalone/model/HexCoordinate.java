@@ -11,6 +11,12 @@ public class HexCoordinate {
         this.r = r; // axial coordinates
     }
 
+    public HexCoordinate(String coordStr) {
+        String[] parts = coordStr.replaceAll("[()]", "").split(",");
+        this.q = Integer.parseInt(parts[0].trim());
+        this.r = Integer.parseInt(parts[1].trim());
+    }
+
     public int q() {
         return q;
     }

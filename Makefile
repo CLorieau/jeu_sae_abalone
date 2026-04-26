@@ -8,7 +8,8 @@ BINDIR = bin
 MAIN_CLASS = abalone.Main
 
 # Flags
-JAVAC_FLAGS = -d $(BINDIR) -sourcepath $(SRCDIR)
+JSON_JAR = $(SRCDIR)/abalone/model/java-json.jar
+JAVAC_FLAGS = -cp "$(JSON_JAR)" -d $(BINDIR) -sourcepath $(SRCDIR)
 
 # Find all Java source files
 SOURCES = $(shell find $(SRCDIR) -name "*.java")
@@ -31,7 +32,7 @@ $(BINDIR)/%.class: $(SRCDIR)/%.java
 # Run target
 .PHONY: run
 run: compile
-	$(JAVA) -cp $(BINDIR) $(MAIN_CLASS)
+	$(JAVA) -cp "$(JSON_JAR):$(BINDIR)" $(MAIN_CLASS)
 
 # Clean target
 .PHONY: clean

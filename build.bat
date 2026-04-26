@@ -39,7 +39,7 @@ exit /b 0
 :compile
 echo Compiling Java source files...
 if not exist "%BINDIR%" mkdir "%BINDIR%"
-%JAVAC% -d "%BINDIR%" -sourcepath "%SRCDIR%" "%SRCDIR%\abalone\*.java" "%SRCDIR%\abalone\controller\*.java" "%SRCDIR%\abalone\model\*.java" "%SRCDIR%\abalone\view\*.java"
+%JAVAC% -cp "%SRCDIR%\abalone\model\java-json.jar" -d "%BINDIR%" -sourcepath "%SRCDIR%" "%SRCDIR%\abalone\*.java" "%SRCDIR%\abalone\controller\*.java" "%SRCDIR%\abalone\model\*.java" "%SRCDIR%\abalone\view\*.java"
 if !errorlevel! equ 0 (
     echo Compilation successful.
 ) else (
@@ -50,7 +50,7 @@ exit /b 0
 
 :run
 echo Running the game...
-%JAVA% -cp "%BINDIR%" %MAIN_CLASS%
+%JAVA% -cp "%SRCDIR%\abalone\model\java-json.jar;%BINDIR%" %MAIN_CLASS%
 exit /b 0
 
 :clean
